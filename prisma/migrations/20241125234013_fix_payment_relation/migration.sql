@@ -1,0 +1,75 @@
+-- AlterTable
+ALTER TABLE `user` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ADD COLUMN `role` ENUM('ADMIN', 'CASHIER', 'WAITER') NOT NULL DEFAULT 'CASHIER';
+
+-- CreateTable
+CREATE TABLE `Table` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `number` INTEGER NOT NULL,
+    `status` ENUM('AVAILABLE', 'OCCUPIED', 'RESERVED') NOT NULL DEFAULT 'AVAILABLE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `Table_number_key`(`number`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `MenuItem` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `price` DOUBLE NOT NULL,
+    `isAvailable` BOOLEAN NOT NULL DEFAULT true,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Order` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `tableId` INTEGER NOT NULL,
+    `status` ENUM('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `completedAt` DATETIME(3) NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `OrderItem` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `orderId` INTEGER NOT NULL,
+    `menuItemId` INTEGER NOT NULL,
+    `quantity` INTEGER NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Payment` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `orderId` INTEGER NOT NULL,
+    `amount` DOUBLE NOT NULL,
+    `method` ENUM('CASH', 'CARD', 'ONLINE') NOT NULL,
+    `paidAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `Payment_orderId_key`(`orderId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Order` ADD CONSTRAINT `Order_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Order` ADD CONSTRAINT `Order_tableId_fkey` FOREIGN KEY (`tableId`) REFERENCES `Table`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_menuItemId_fkey` FOREIGN KEY (`menuItemId`) REFERENCES `MenuItem`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Payment` ADD CONSTRAINT `Payment_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
