@@ -3,6 +3,10 @@ import { PrismaClient } from '@prisma/client';
 
 import bodyParser from 'body-parser';
 import authRoutes from './src/routes/authRoutes.js';
+import menuRoutes from './src/routes/menuRoutes.js';
+import orderRoutes from './src/routes/ordersRoutes.js';
+import tableRoutes from './src/routes/tableRoutes.js';  
+
 
 
 const app = express();
@@ -13,6 +17,10 @@ app.use(bodyParser.json());
 
 // Routes will go here
 app.use('/api/auth', authRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/tables', tableRoutes);
+
 
 const PORT = 3000;
 app.listen(PORT, () => {

@@ -1,35 +1,53 @@
-import prisma from '../../app.js';  // Importing prisma instance
+import prisma from '../../app.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// User signup
-export const signup = async (req, res) => {
-  const { name, email, password, role } = req.body;
-  console.log(req.body)
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
+
+export const registerUser = async (req, res) => {
   try {
+    const { name, email, password, role } = req.body;
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) return res.status(400).json({ message: 'Email already in use' });
+
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
+
+    // Create the user
+    const newUser = await prisma.user.create({
       data: { name, email, password: hashedPassword, role },
     });
-    res.status(201).json({ message: 'User created', user });
+
+    res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create user' });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
-// User login
-export const login = async (req, res) => {
-  const { email, password } = req.body;
+export const loginUser = async (req, res) => {
   try {
+    const { email, password } = req.body;
+
+    // Find the user
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ message: 'Invalid email or password' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+    // Verify the password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) return res.status(404).json({ message: 'Invalid email or password' });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ message: 'Login successful', token });
+    // Generate JWT
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to login' });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
