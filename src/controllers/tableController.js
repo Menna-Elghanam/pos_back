@@ -1,14 +1,15 @@
-import prisma from '../../app.js'; 
+import prisma from '../../app.js';
 
 // Create a new table
 export const createTable = async (req, res) => {
-  const { number, seats } = req.body;
+  const { number, seats, status = "Free" } = req.body; // Default status is "Free"
 
   try {
     const newTable = await prisma.table.create({
       data: {
         number,
         seats,
+        status,
       },
     });
     res.status(201).json({ message: 'Table created successfully', table: newTable });
@@ -23,7 +24,7 @@ export const getAllTables = async (req, res) => {
   try {
     const tables = await prisma.table.findMany({
       include: {
-        orders: true,  // Include orders for each table if needed
+        orders: true, // Include orders for each table if needed
       },
     });
     res.status(200).json(tables);
@@ -41,7 +42,7 @@ export const getTableById = async (req, res) => {
     const table = await prisma.table.findUnique({
       where: { id: parseInt(tableId) },
       include: {
-        orders: true,  // Include orders for this table
+        orders: true, // Include orders for this table
       },
     });
 
@@ -59,7 +60,7 @@ export const getTableById = async (req, res) => {
 // Update a table
 export const updateTable = async (req, res) => {
   const { tableId } = req.params;
-  const { number, seats } = req.body;
+  const { number, seats, status } = req.body; // Status can now be updated
 
   try {
     const updatedTable = await prisma.table.update({
@@ -67,12 +68,33 @@ export const updateTable = async (req, res) => {
       data: {
         number,
         seats,
+        status,
       },
     });
     res.status(200).json({ message: 'Table updated successfully', table: updatedTable });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to update table' });
+  }
+};
+
+// Update table status
+export const updateTableStatus = async (req, res) => {
+  const { tableId } = req.params;
+  const { status } = req.body; // Accept status change only
+
+  try {
+    const updatedTable = await prisma.table.update({
+      where: { id: parseInt(tableId) },
+      data: {
+        status,
+      },
+    });
+
+    res.status(200).json({ message: 'Table status updated successfully', table: updatedTable });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to update table status' });
   }
 };
 
