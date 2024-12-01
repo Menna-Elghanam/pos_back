@@ -22,8 +22,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Adding the opposite relation
-  orders    Order[]  // A user can have multiple orders
+  orders    Order[]  // One-to-many relation with the Order model
 }
 
 enum OrderType {
@@ -33,71 +32,85 @@ enum OrderType {
 
 model Order {
   id              Int       @id @default(autoincrement())
-  tableId         Int?      // Nullable because it might not be needed for delivery orders
+  tableId         Int?
   userId          Int
   total           Float
-  status          String    // Example: 'pending', 'in-progress', 'completed'
-  orderType       OrderType
-  deliveryAddress String?   // Nullable, only for delivery orders
-  deliveryTime    DateTime? // Nullable, only for delivery orders
+  status          String // "pending", "completed")
+  orderType       OrderType //"in_place" or "delivery"
+  deliveryAddress String?
+  deliveryTime    DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  // Relationships
-  table           Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItems      OrderItem[]
-  invoice         Invoice?  // Add this line to establish the one-to-one relation
+  table           Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull) // Optional relation with Table
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)  // relation with user
+  invoice         Invoice? // optional relation with invoice 
+  orderItems      OrderItem[]  // One-to-many relation with OrderItem
+  
 }
+//Represents the individual items within an order.
 
 model OrderItem {
   id          Int       @id @default(autoincrement())
-  orderId     Int
-  menuItemId  Int
+  orderId     Int      // Order ID (foreign key)
+  menuItemId  Int      // Menu item ID (foreign key)
   quantity    Int
   price       Float
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  // Relationships
-  order       Order     @relation(fields: [orderId], references: [id])
-  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
+  order       Order     @relation(fields: [orderId], references: [id]) // relation to Order
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id]) // relation to MenuItem 
 }
+//Represents the menu items available in the restaurant.
+
 
 model MenuItem {
   id          Int     @id @default(autoincrement())
   name        String
   description String
   price       Float
-  category    String
   available   Boolean @default(true)
+  categoryId  Int?        // Foreign key for Category
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  category    Category?   @relation(fields: [categoryId], references: [id]) // Relation to Category
 
-  // Relationships
-  orderItems    OrderItem[]
+  orderItems  OrderItem[] // One-to-many relation with OrderItem
+}
+// category model 
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  menuItems   MenuItem[] // One-to-many relation with MenuItem
 }
 
 model Table {
   id        Int      @id @default(autoincrement())
   number    Int
   seats     Int
-  orders    Order[]
-  status    String   @default("Free") // Possible values: Free, Occupied, Reserved
+  orders    Order[]  // One-to-many relation with Order
+  status    String   @default("Free")
 }
+
+//Represents the invoice associated with an order.
 
 model Invoice {
   id             Int      @id @default(autoincrement())
-  orderId        Int      @unique
+  orderId        Int      @unique // One-to-one relation with Order
   billingName    String
   billingAddress String
   billingEmail   String
   billingPhone   String
   totalAmount    Float
-  status         String   // Example: 'unpaid', 'paid', 'canceled'
+  status         String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // Relationship
-  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade) // relation to Order
 }
+
