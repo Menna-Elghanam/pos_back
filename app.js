@@ -1,5 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import cors from 'cors';
 
 import bodyParser from 'body-parser';
 import authRoutes from './src/routes/authRoutes.js';
@@ -22,6 +23,7 @@ const prisma = new PrismaClient();
 export default prisma;
 
 app.use(bodyParser.json());
+app.use(cors()); 
 
 // Routes will go here
 app.use('/api/auth', authRoutes);

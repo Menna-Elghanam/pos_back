@@ -25,10 +25,18 @@ model User {
   orders    Order[]  // One-to-many relation with the Order model
 }
 
+// enum OrderType {
+//   in_place
+//   delivery
+// }
+
+
 enum OrderType {
-  in_place
-  delivery
+  PLACE
+  TAKEAWAY
+  DELIVERY
 }
+
 
 model Order {
   id              Int       @id @default(autoincrement())
