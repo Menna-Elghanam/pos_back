@@ -22,21 +22,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  orders    Order[]  // One-to-many relation with the Order model
+  orders Order[] // One-to-many relation with the Order model
 }
-
-// enum OrderType {
-//   in_place
-//   delivery
-// }
-
 
 enum OrderType {
   PLACE
   TAKEAWAY
   DELIVERY
 }
-
 
 model Order {
   id              Int       @id @default(autoincrement())
@@ -50,59 +43,60 @@ model Order {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  table           Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull) // Optional relation with Table
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)  // relation with user
-  invoice         Invoice? // optional relation with invoice 
-  orderItems      OrderItem[]  // One-to-many relation with OrderItem
-  
+  table      Table?      @relation(fields: [tableId], references: [id]) // Optional relation with Table
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade) // relation with user
+  invoice    Invoice? // optional relation with invoice 
+  orderItems OrderItem[] // One-to-many relation with OrderItem
 }
+
 //Represents the individual items within an order.
 
 model OrderItem {
-  id          Int       @id @default(autoincrement())
-  orderId     Int      // Order ID (foreign key)
-  menuItemId  Int      // Menu item ID (foreign key)
-  quantity    Int
-  price       Float
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         Int      @id @default(autoincrement())
+  orderId    Int // Order ID (foreign key)
+  menuItemId Int // Menu item ID (foreign key)
+  quantity   Int
+  price      Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  order       Order     @relation(fields: [orderId], references: [id]) // relation to Order
-  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id]) // relation to MenuItem 
+  order    Order    @relation(fields: [orderId], references: [id]) // relation to Order
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id]) // relation to MenuItem 
 }
+
 //Represents the menu items available in the restaurant.
 
-
 model MenuItem {
-  id          Int     @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   description String
   price       Float
-  available   Boolean @default(true)
-  categoryId  Int?        // Foreign key for Category
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  category    Category?   @relation(fields: [categoryId], references: [id]) // Relation to Category
+  available   Boolean   @default(true)
+  categoryId  Int? // Foreign key for Category
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  category    Category? @relation(fields: [categoryId], references: [id]) // Relation to Category
 
-  orderItems  OrderItem[] // One-to-many relation with OrderItem
+  orderItems OrderItem[] // One-to-many relation with OrderItem
 }
+
 // category model 
 model Category {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  menuItems   MenuItem[] // One-to-many relation with MenuItem
+  menuItems MenuItem[] // One-to-many relation with MenuItem
 }
 
 model Table {
-  id        Int      @id @default(autoincrement())
-  number    Int
-  seats     Int
-  orders    Order[]  // One-to-many relation with Order
-  status    String   @default("Free")
+  id     Int     @id @default(autoincrement())
+  number Int
+  seats  Int
+  orders Order[] // One-to-many relation with Order
+  status String  @default("Free")
 }
 
 //Represents the invoice associated with an order.
@@ -119,6 +113,5 @@ model Invoice {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade) // relation to Order
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade) // relation to Order
 }
-
