@@ -104,6 +104,11 @@ export const createOrder = async (req, res) => {
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await prisma.order.findMany({
+      where: {
+        orderType: {
+          in: ['PLACE', 'TAKEAWAY', 'DELIVERY'], // Ensure only valid OrderType values
+        },
+      },
       include: {
         user: true,
         table: true,
@@ -121,6 +126,7 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch orders.', error: error.message });
   }
 };
+
 
 export const getOrderById = async (req, res) => {
   const { orderId } = req.params;

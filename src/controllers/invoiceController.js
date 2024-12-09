@@ -49,6 +49,9 @@ export const createInvoice = async (req, res) => {
 
 
 
+
+
+
 // Get all invoices
 export const getAllInvoices = async (req, res) => {
   try {
@@ -74,6 +77,10 @@ export const getAllInvoices = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch invoices', error: error.message });
   }
 };
+
+
+
+
 
 
 

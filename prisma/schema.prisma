@@ -37,7 +37,7 @@ model Order {
   userId          Int
   total           Float
   status          String // "pending", "completed")
-  orderType       OrderType //"in_place" or "delivery"
+  orderType       OrderType  //"in_place" or "delivery"
   deliveryAddress String?
   deliveryTime    DateTime?
   createdAt       DateTime  @default(now())

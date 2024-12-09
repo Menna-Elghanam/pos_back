@@ -1,8 +1,9 @@
+
 import prisma from '../../app.js';
 
 // Create a new table
 export const createTable = async (req, res) => {
-  const { number, seats, status = "Free" } = req.body; // Default status is "Free"
+  const { number, seats, status = "Free" } = req.body;
 
   try {
     const newTable = await prisma.table.create({
@@ -19,31 +20,94 @@ export const createTable = async (req, res) => {
   }
 };
 
-// Get all tables
+// Get all tables - with safer order handling
 export const getAllTables = async (req, res) => {
   try {
+    // First, fetch tables without orders
     const tables = await prisma.table.findMany({
       include: {
-        orders: true, // Include orders for each table if needed
-      },
+        orders: {
+          where: {
+            orderType: {
+              in: ['PLACE', 'TAKEAWAY', 'DELIVERY']
+            }
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+              }
+            },
+            orderItems: {
+              include: {
+                menuItem: {
+                  select: {
+                    id: true,
+                    name: true,
+                    price: true,
+                    description: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     });
+
     res.status(200).json(tables);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to fetch tables' });
+    console.error('Error fetching tables:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch tables',
+      error: error.message 
+    });
   }
 };
 
-// Get a single table by ID
+// Get a single table by ID - with safer order handling
 export const getTableById = async (req, res) => {
   const { tableId } = req.params;
 
   try {
     const table = await prisma.table.findUnique({
-      where: { id: parseInt(tableId) },
-      include: {
-        orders: true, // Include orders for this table
+      where: { 
+        id: parseInt(tableId) 
       },
+      include: {
+        orders: {
+          where: {
+            orderType: {
+              in: ['PLACE', 'TAKEAWAY', 'DELIVERY']
+            }
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+              }
+            },
+            orderItems: {
+              include: {
+                menuItem: {
+                  select: {
+                    id: true,
+                    name: true,
+                    price: true,
+                    description: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!table) {
@@ -53,18 +117,23 @@ export const getTableById = async (req, res) => {
     res.status(200).json(table);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to fetch table' });
+    res.status(500).json({ 
+      message: 'Failed to fetch table',
+      error: error.message 
+    });
   }
 };
 
 // Update a table
 export const updateTable = async (req, res) => {
   const { tableId } = req.params;
-  const { number, seats, status } = req.body; // Status can now be updated
+  const { number, seats, status } = req.body;
 
   try {
     const updatedTable = await prisma.table.update({
-      where: { id: parseInt(tableId) },
+      where: { 
+        id: parseInt(tableId) 
+      },
       data: {
         number,
         seats,
@@ -74,18 +143,23 @@ export const updateTable = async (req, res) => {
     res.status(200).json({ message: 'Table updated successfully', table: updatedTable });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to update table' });
+    res.status(500).json({ 
+      message: 'Failed to update table',
+      error: error.message 
+    });
   }
 };
 
 // Update table status
 export const updateTableStatus = async (req, res) => {
   const { tableId } = req.params;
-  const { status } = req.body; // Accept status change only
+  const { status } = req.body;
 
   try {
     const updatedTable = await prisma.table.update({
-      where: { id: parseInt(tableId) },
+      where: { 
+        id: parseInt(tableId) 
+      },
       data: {
         status,
       },
@@ -94,7 +168,10 @@ export const updateTableStatus = async (req, res) => {
     res.status(200).json({ message: 'Table status updated successfully', table: updatedTable });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to update table status' });
+    res.status(500).json({ 
+      message: 'Failed to update table status',
+      error: error.message 
+    });
   }
 };
 
@@ -104,11 +181,16 @@ export const deleteTable = async (req, res) => {
 
   try {
     await prisma.table.delete({
-      where: { id: parseInt(tableId) },
+      where: { 
+        id: parseInt(tableId) 
+      },
     });
     res.status(200).json({ message: 'Table deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to delete table' });
+    res.status(500).json({ 
+      message: 'Failed to delete table',
+      error: error.message 
+    });
   }
 };

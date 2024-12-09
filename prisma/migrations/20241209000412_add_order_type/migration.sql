@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `order` MODIFY `orderType` ENUM('PLACE', 'TAKEAWAY', 'DELIVERY') NOT NULL DEFAULT 'PLACE';
